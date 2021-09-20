@@ -8,10 +8,13 @@
 #include <chrono>
 
 const size_t n = 10000;
-std::mt19937_64 rng(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-std::uniform_int_distribution<std::mt19937_64::result_type> dist(
-        std::uniform_int_distribution<std::mt19937_64::result_type>(0, 1)); // global for simplicity
 const bool chat = false;
+
+int bool_rand() {
+    static thread_local std::mt19937 generator(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+    std::uniform_int_distribution<int> distribution(0, 1);
+    return distribution(generator);
+}
 
 void runner(counter* c) {
     for (std::size_t i = 0; i < n; ++i) {
@@ -24,7 +27,7 @@ void runner(counter* c) {
 
 void sleepy_runner(counter* c) {
     for (std::size_t i = 0; i < n; ++i) {
-        if (dist(rng)) {
+        if (bool_rand()) {
             if constexpr (chat) {
                 std::cout << std::this_thread::get_id() << ": sleeping" << std::endl;
             }

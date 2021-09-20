@@ -8,16 +8,18 @@
 
 class counter {
 private:
+    int int_rand(const int & min, const int & max) {
+        static thread_local std::mt19937 generator(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+        std::uniform_int_distribution<int> distribution(min,max);
+        return distribution(generator);
+    }
+
     const std::size_t size;
     std::vector<std::atomic_int> counters;
 
-    std::mt19937_64 rng;
-    std::uniform_int_distribution<std::mt19937_64::result_type> dist;
 public:
     explicit counter(size_t threads) : size(threads),
-        counters(std::vector<std::atomic_int>(size)),
-        rng(std::chrono::high_resolution_clock::now().time_since_epoch().count()),
-        dist(std::uniform_int_distribution<std::mt19937_64::result_type>(0, size-1)){}
+        counters(std::vector<std::atomic_int>(size)) {}
 
     counter() : counter(std::thread::hardware_concurrency()) {}
 
@@ -26,7 +28,7 @@ public:
     }
 
     void inc() {
-        size_t i = dist(rng);
+        size_t i = int_rand(0, size-1);
         counters[i].fetch_add(1, std::memory_order_seq_cst);
     }
 };

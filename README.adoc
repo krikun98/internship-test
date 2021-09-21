@@ -18,11 +18,19 @@ All the increments consist of choosing the register and then a single FAA operat
 The choice is independent of other threads and does not impact any shared resources, and the FAA operation is atomic.
 Therefore, we just place the write operation in the linearization when the FAA actually occurs.
 
-For each `get`, there is a point between its start and completion when the sum contains all the values in all the registers.
-This can be the linearization point for the `get` operation.
+For each `get()`, there is a point between its start and completion when the sum contains all the values in all the registers.
+This can be the linearization point for the `get()` operation.
 
-If an `inc` starts (and does not finish) before a `get` finishes, the result may or may not include that increment.
-Nevertheless, the execution sequence remains linearizeable: if the result was included, the `get` operation will be placed after the `inc` in the linearized sequence, if not - the order will be reversed.
+If an `inc()` starts (and does not finish) before a `get()` finishes, the result may or may not include that increment.
+Nevertheless, the execution sequence remains linearizeable: if the result was included, the `get()` operation will be placed after the `inc()` in the linearized sequence, if not - the order will be reversed.
 
 Ordering the operations by the points discussed above yields a sequential order where each operation is accounted for, return values of corresponding operations are identical and all pairwise sequences of operations are preserved - essentially, it yields a linearization.
 This linearization can be obtained for any sequence of operations for the counter, therefore, the counter implementation is linearizeable.
+
+== Optional question
+
+If the counter has an atomic `inc(delta: Int)`, the same logic still holds: the `inc(delta: Int)` operation would still effectively be atomic, and we could pick the same linearization point as for `inc()`.
+The relationship to the `get()` operation also would not change.
+
+Therefore, if we consider the counter with `inc()` and `get()` linearizeable, that counter with an added operation `inc(delta: Int)` would still be linearizeable.
+There could be occasions where several linearizations for a history would be viable, but these situations are inherent with concurrent systems and don't contradict linearizeability.
